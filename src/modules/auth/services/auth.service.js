@@ -7,23 +7,19 @@ class AuthService {
     tokenRepository = new TokenRepository()
 
     constructor(userRepository, tokenRepository) {
-        this.validateUserRepository(userRepository)
-        this.validateTokenRepository(tokenRepository)
+        this.#validateUserRepository(userRepository)
+        this.#validateTokenRepository(tokenRepository)
         this.userRepository = userRepository
         this.tokenRepository = tokenRepository
     }
 
     async authenticate(email, password) {
         const result = await this.userRepository.findByEmail(email)
-        const user = this.validateUser(result)
+        const user = this.#validateUser(result)
         if (user.password !== password) {
             throw new Error('Credentials invalid')
         }
-        const userResponse = {
-            id: user.id,
-            email: user.email,
-            type: user.type,
-        }
+        const userResponse = user.toJSON({ password: false })
         const token = this.tokenRepository.generateToken(userResponse)
 
         return {
@@ -32,25 +28,29 @@ class AuthService {
         }
     }
 
-    validateUserRepository(repository) {
+    #validateUserRepository(repository) {
         const isValid = repository instanceof UserRepository
         if (!isValid) {
             throw new ReferenceError('User repository does not exist')
         }
     }
 
-    validateUser(user) {
+    #validateUser(user) {
         const isValid = user instanceof User
         if (!user) throw new Error('User not found')
         if (!isValid) throw new Error('User exception')
         return user
     }
 
-    validateTokenRepository(repository) {
+    #validateTokenRepository(repository) {
         const isValid = repository instanceof TokenRepository
         if (!isValid) {
             throw new ReferenceError('Token repository does not exist')
         }
+    }
+
+    verifyToken(token) {
+        return this.tokenRepository.verifyToken(token)
     }
 }
 

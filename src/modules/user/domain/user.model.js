@@ -15,14 +15,22 @@ class User {
         return this.type === 'admin'
     }
 
-    toJSON() {
-        return {
-            id: this.id,
-            name: this.name,
-            email: this.email,
-            type: this.type,
-            password: this.password,
+    toJSON(options = {}) {
+        const defaultFields = {
+            id: true,
+            name: true,
+            email: true,
+            type: true,
+            password: true,
         }
+        const fieldsToInclude = { ...defaultFields, ...options }
+        const json = {}
+        if (fieldsToInclude.id) json.id = this.id
+        if (fieldsToInclude.name) json.name = this.name
+        if (fieldsToInclude.email) json.email = this.email
+        if (fieldsToInclude.type) json.type = this.type
+        if (fieldsToInclude.password) json.password = this.password
+        return json
     }
 }
 

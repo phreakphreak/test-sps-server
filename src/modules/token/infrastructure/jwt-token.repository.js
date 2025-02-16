@@ -13,7 +13,7 @@ class JwtTokenRepository extends TokenRepository {
             message: 'payload is not valid',
         })
         jsonSchema.parse(payload)
-        return jwt.sign(payload, this.secretKey, { expiresIn: '1h' })
+        return jwt.sign(payload, this.secretKey, { expiresIn: '15m' })
     }
 
     verifyToken(token) {

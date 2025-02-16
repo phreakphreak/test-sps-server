@@ -4,6 +4,7 @@ const routes = require('./routes')
 const cors = require('cors')
 const { SequelizeClient } = require('./modules/shared/db/sequelize-client')
 const { PORT } = require('../config/env')
+const { userSeed } = require('./seeds/user.seed')
 
 const sequelizeClient = new SequelizeClient()
 
@@ -11,7 +12,7 @@ async function init() {
     try {
         await sequelizeClient.connect()
         await sequelizeClient.getConnection().sync()
-
+        await userSeed(false)
         const app = express()
         app.use(express.json())
         app.use(cors())
