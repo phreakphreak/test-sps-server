@@ -1,13 +1,29 @@
-const express = require("express");
-const routes = require("./routes");
-const cors = require("cors");
+require('dotenv').config()
+const express = require('express')
+const routes = require('./routes')
+const cors = require('cors')
+const { SequelizeClient } = require('./modules/shared/db/sequelize-client')
+const { PORT } = require('../config/env')
+const { userSeed } = require('./seeds/user.seed')
 
-const app = express();
+const sequelizeClient = new SequelizeClient()
 
-app.use(cors());
+async function init() {
+    try {
+        await sequelizeClient.connect()
+        await sequelizeClient.getConnection().sync()
+        await userSeed(false)
+        const app = express()
+        app.use(express.json())
+        app.use(cors())
+        app.use(routes)
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`)
+        })
+    } catch (error) {
+        console.error('❌ Error al iniciar el servidor:', error)
+        process.exit(1)
+    }
+}
 
-app.use(routes);
-
-app.listen(process.env.PORT, () => {
-  console.log("Server is running on http://localhost:3000");
-});
+init()
