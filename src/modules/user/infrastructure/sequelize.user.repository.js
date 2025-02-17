@@ -8,9 +8,33 @@ class SequelizeUserRepository extends UserRepository {
         return row ? new User(row.toJSON()) : null
     }
 
-    async createUser(user) {
+    async create(user) {
         const row = await UserModel.create(user)
         return new User(row.toJSON())
+    }
+
+    async findById(id) {
+        const row = await UserModel.findByPk(id)
+        return row ? new User(row.toJSON()) : null
+    }
+
+    async update(id, userData) {
+        const [updated] = await UserModel.update(userData, { where: { id } })
+        if (updated) {
+            const row = await UserModel.findByPk(id)
+            return new User(row.toJSON())
+        }
+        return null
+    }
+
+    async delete(id) {
+        const deleted = await UserModel.destroy({ where: { id } })
+        return deleted > 0
+    }
+
+    async findAll() {
+        const rows = await UserModel.findAll()
+        return rows.map((row) => new User(row.toJSON()))
     }
 }
 

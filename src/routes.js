@@ -1,5 +1,5 @@
 const { Router } = require('express')
-const { authRoutes } = require('./api')
+const { authRoutes, userRoutes } = require('./api')
 
 const routes = Router()
 
@@ -8,5 +8,6 @@ routes.get('/', (req, res) => {
 })
 
 routes.use(authRoutes)
+routes.use(userRoutes)
 
 module.exports = routes

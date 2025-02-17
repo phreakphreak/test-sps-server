@@ -1,6 +1,11 @@
 const { UserRepository } = require('../../user/domain/user.repository')
 const { TokenRepository } = require('../../token/domain/token.repository')
 const { User } = require('../../user/domain/user.model')
+const {
+    UserNotFoundError,
+    UserNotImplemented,
+    UserCredentialsError,
+} = require('../../shared/errors')
 
 class AuthService {
     userRepository = new UserRepository()
@@ -16,9 +21,7 @@ class AuthService {
     async authenticate(email, password) {
         const result = await this.userRepository.findByEmail(email)
         const user = this.#validateUser(result)
-        if (user.password !== password) {
-            throw new Error('Credentials invalid')
-        }
+        if (user.password !== password) throw new UserCredentialsError()
         const userResponse = user.toJSON({ password: false })
         const token = this.tokenRepository.generateToken(userResponse)
 
@@ -37,8 +40,8 @@ class AuthService {
 
     #validateUser(user) {
         const isValid = user instanceof User
-        if (!user) throw new Error('User not found')
-        if (!isValid) throw new Error('User exception')
+        if (!user) throw new UserNotFoundError()
+        if (!isValid) throw new UserNotImplemented()
         return user
     }
 
@@ -49,8 +52,14 @@ class AuthService {
         }
     }
 
-    verifyToken(token) {
-        return this.tokenRepository.verifyToken(token)
+    async verifyToken(token) {
+        const user = this.tokenRepository.verifyToken(token)
+        const userFound = await this.userRepository.findById(user.id)
+        this.#validateUser(userFound)
+        if (!userFound.equalsByEmail(user.email)) {
+            throw new UserNotFoundError()
+        }
+        return user
     }
 }
 
